@@ -20,10 +20,14 @@
 
 ## Prepared, not externally verified
 
-An offline GitHub Actions workflow is included; it has not run on a public GitHub
-repository. Local Git was initialized and files staged, but no public repository,
-remote push, author-attributed commit or CV submission is claimed. The source review
-ZIP is a review artifact, not proof of open-source publication or eligibility.
+The source was published to https://github.com/Andrew2ndSun/marketmind using local
+Git after the connector reported insufficient write permissions. Public visibility
+and an unauthenticated README download were verified. Source, contribution disclosure,
+configuration examples and tests are included; recordings and local exports are excluded.
+
+The initial app source commit is fda90276092f4e4a92b196046cdd6f5c1f6cfefb. The offline
+GitHub Actions workflow has started; consult the repository Actions page for current
+hosted results. Local application tests passed. No CV submission is claimed.
 
 The captioned demo is a local draft: check its full playback and add narration if
 desired before hosting it. No public video URL or signed-out access has been verified.

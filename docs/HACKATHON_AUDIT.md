@@ -11,7 +11,7 @@ recommended for submission troubleshooting. Check Discord announcements for chan
 | --- | --- | --- |
 | One problem statement | Implemented | Build for Your World: inspect equity narratives, counterarguments and historical risk. |
 | Incorporate Meta models | Implemented and live-tested | Muse Spark 1.3, official Meta API only; no other model provider. |
-| Public repository | Public visibility verified; source upload in progress | https://github.com/Andrew2ndSun/marketmind; GitHub metadata reports private=false. |
+| Public repository | Verified: source published and publicly readable | https://github.com/Andrew2ndSun/marketmind; private=false and unauthenticated README download returned HTTP 200. |
 | Maximum four people; solo allowed | Builder confirmed | Indie Developer; Andrew2ndSun is the sole contributor and representative. |
 | New work built during the event | Disclosure prepared; organizer acceptance reported by builder | See ORIGINAL_CONTRIBUTIONS.md. Builder confirmed organizers accepted this project as an indie candidate; no independent organizer record was inspected. |
 | Clearly identify new code/features in demo | Prepared | File-level contribution map and timed demo script. Do not present inherited code as event work. |
