@@ -11,16 +11,18 @@ historical risk and unanswered questions rather than hiding uncertainty behind a
 without assembling a price chart, data snapshot and source trail by hand. User impact is
 proposed; no controlled time-saving or financial-performance claim has been established.
 
-**What it does:** The user asks about a ticker. MarketMind collects completed adjusted closes,
+**What it does:** The home page first scans market activity and economic headlines
+to show ten source-linked stock candidates and industry themes. The user selects a
+candidate or enters their own ticker, then explicitly starts deeper research. MarketMind collects completed adjusted closes,
 fundamentals and available news, computes historical risk, and asks Muse Spark 1.3 for a
 structured cited research brief. The dashboard links findings to evidence, shows opposing
 interpretations and gaps, and exports the report as JSON.
 
 **Meta tooling:** Official Meta Model API, Muse-only inference, server-side credential loading,
-bounded evidence prompts and structured synthesis. One synthesis request per investigation;
+bounded evidence prompts and structured synthesis. One synthesis request per investigation, plus a separately cached Muse market-discovery call;
 not autonomous multi-agent coordination. No partner inference is required.
 
-**New event work:** Muse integration, structured evidence/citation contract, research API and
+**New event work:** Market discovery with ten stock candidates and economic themes, Muse integration, structured evidence/citation contract, research API and
 dashboard, counterpoints/unknowns, risk presentation, JSON export, focused regression tests
 and submission preparation. Price-fetching helpers were adapted from an earlier prototype.
 See docs/ORIGINAL_CONTRIBUTIONS.md. The builder reports organizer acceptance of this project in the Indie Developer track.

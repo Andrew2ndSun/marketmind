@@ -1,7 +1,9 @@
 # MarketMind
 
 Explainable stock research powered exclusively by Muse models through Meta Model API.
-Ask about a stock, inspect cited findings and counterpoints, review historical risk,
+Start with the market radar: Muse connects current economic/business headlines to
+10 stocks drawn from live market screens. Select one, or enter your own ticker, then
+inspect cited findings and counterpoints, review historical risk,
 and export the full evidence-backed report as JSON.
 
 ## Run
@@ -24,7 +26,8 @@ python -m uvicorn main:app --host 127.0.0.1 --port 8000
 The default model is `muse-spark-1.3`; optionally set `MUSE_MODEL` to another Muse
 text model supported by chat completions. The endpoint is fixed to
 `https://api.meta.ai/v1/chat/completions`. There are no alternate inference providers,
-provider fallbacks, or fixed demo reports. Every successful research request calls Muse.
+provider fallbacks, or fixed demo reports. Every successful research request calls Muse. Discovery uses its own Muse call,
+shared across page loads through a 15-minute in-memory cache.
 Yahoo Finance via yfinance supplies financial evidence, not model inference.
 
 An optional local `.env` can define the same variables; process variables take precedence.
@@ -37,6 +40,8 @@ marketmind/
   app.py          FastAPI routes and dashboard serving
   config.py       Muse model and server-side key settings
   data.py         Yahoo prices, fundamentals, and ticker news
+  discovery_data.py  Activity screens, sector metadata and economic RSS feeds
+  discovery.py    Validated 10-stock Muse selection, cache and source handoff
   metrics.py      Historical returns, volatility, and drawdown
   muse.py         Direct HTTP calls to the official Muse API
   prompts.py      Evidence-constrained research instructions
@@ -56,6 +61,7 @@ main.py           Server entry point, .env and saved Windows environment loading
 | GET | `/api/health` | Service health |
 | GET | `/api/research/status` | Muse configuration presence, without secrets |
 | POST | `/api/research` | Live financial evidence plus cited Muse research |
+| GET | `/api/discovery` | Cached 10-stock market radar with themes and sources |
 
 Request example:
 
@@ -100,3 +106,28 @@ See [the participant-guide audit](docs/HACKATHON_AUDIT.md),
 [three-minute demo script](docs/DEMO_SCRIPT.md).
 Run `python scripts/check_submission.py` for explicit remaining submission gates.
 A local working app is not a completed hackathon submission.
+
+## Market radar
+
+The home page scans automatically. It combines up to 30 US-listed equity candidates
+from Yahoo most-active, gainer and decliner screens with dated headlines from CNBC
+markets/economy, BBC business and Federal Reserve feeds. Headlines and quotes older
+than seven days are excluded. Sector/industry metadata comes from Yahoo snapshots.
+Muse selects exactly 10 distinct symbols from the real pool and explains possible
+industry links and risks. Each selection must cite its own quote and a headline.
+These are attention-based research candidates, not predicted winners or a complete
+market ranking. Economic connections are hypotheses, not verified price catalysts.
+
+A card's Research button fills the question and symbol; Investigate remains a separate
+user action. While the originating scan is available, its original headline and quote
+sources are included in deep research with R-prefixed IDs. Expired/replaced context
+produces an explicit warning. Muse-generated radar claims are not recycled as evidence.
+
+`GET /api/discovery?refresh=true` requests a new scan, with a one-minute refresh
+cooldown. Normal scans are cached 15 minutes per server process; restarting clears
+the cache. A second in-flight scan returns 503. Missing data or invalid model output
+never produces a canned top-ten list, and manual ticker research remains available.
+
+The optional request field `discovery_created_at` identifies a selected server-side
+scan. Clients do not submit arbitrary source payloads. Quotes may be delayed and
+sources can be incomplete. No full news articles are downloaded.

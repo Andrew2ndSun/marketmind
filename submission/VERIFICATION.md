@@ -40,3 +40,13 @@ final platform submission still require participant confirmation. A successful A
 Run `python scripts/check_submission.py --run-tests --output artifacts/preflight.json`
 for remaining gates. Read docs/HACKATHON_AUDIT.md and ORIGINAL_CONTRIBUTIONS.md before
 submission. Do not label this project fully compliant until pending items are resolved.
+
+## Market-radar verification
+
+The discovery feature was added after the original recording. The combined offline
+suite now has **23 passing tests**. A live Muse scan selected 10 stocks from 30 valid
+Yahoo activity candidates and 26 recent headlines, with no source warnings. Browser
+checks passed at desktop and mobile widths for all ten cards, citations, cache refresh,
+no automatic research on selection, and explicit manual research handoff. New tests
+verify original-source transfer and expired-context warnings. The original recording
+does not yet demonstrate the radar.

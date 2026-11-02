@@ -149,7 +149,7 @@ class MarketMindTests(unittest.TestCase):
         self.assertIn('MarketMind / Powered by Muse',home)
         self.assertNotIn('id="mode"',home)
         self.assertEqual(self.client.get('/static/marketmind.js').status_code,200)
-        self.assertEqual(set(self.client.get('/openapi.json').json()['paths']),{'/api/health','/api/research/status','/api/research'})
+        self.assertEqual(set(self.client.get('/openapi.json').json()['paths']),{'/api/health','/api/research/status','/api/research','/api/discovery'})
         self.assertEqual(self.client.get('/desk').status_code,404)
         status=self.client.get('/api/research/status').json()
         self.assertTrue(status['live_configured'])

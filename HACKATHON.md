@@ -12,7 +12,9 @@ counterarguments, historical risk, and unanswered questions.
 
 ## Three-minute walkthrough
 
-1. Open the local dashboard with your Windows `MUSE_API_KEY` configured.
+1. Open the local dashboard with your Windows `MUSE_API_KEY` configured and inspect
+   the 10-stock market radar, economic themes and sources. Select a stock to fill
+   the research form; the user still chooses when to run full research.
 2. Ask: "What could explain AMD's recent movement, and what challenges that story?"
 3. Show the research brief and follow a citation into the evidence trail.
 4. Compare supporting findings with counterpoints. Explain the limits of causal claims.
@@ -86,3 +88,16 @@ Generated videos/reports are saved in ignored `artifacts/`, not in the public so
 
 The deadline in the supplied guide is November 4, 2026 at 6:00 PM Pacific / 9:00 PM
 Eastern. The representative must submit once on CV and verify all public links.
+
+## Market discovery added during the event
+
+Before a single-stock investigation, the front page now scans US-equity activity and
+recent economic/business headlines. Muse connects source-grounded industry themes to
+10 real candidates, with a reason, risk, quote and citation for each. The shortlist
+is a research starting point, not investment advice or an all-market prediction.
+Both discovery and deep research use Muse exclusively. Each research request makes
+one synthesis call; a separately cached discovery scan makes another.
+
+The existing local 175.56-second video predates this feature. It still demonstrates
+the original research flow but should be re-recorded if the submission highlights
+the radar. See the updated timed script in docs/DEMO_SCRIPT.md.

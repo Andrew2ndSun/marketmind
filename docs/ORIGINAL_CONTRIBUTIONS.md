@@ -11,6 +11,7 @@ pre-event commit history, and deleting old files does not make inherited work ne
 | marketmind/metrics.py | Event extraction/integration of standard financial formulas | New research presentation and validation; no claim that volatility/drawdown formulas are novel. |
 | marketmind/muse.py, config.py, prompts.py | Event Muse integration | Official Muse-only API, server-side Windows key loading, bounded structured synthesis. |
 | marketmind/schemas.py, validation.py, errors.py | Event research-contract implementation | Required citations, schema validation and rejection of invalid report output. |
+| marketmind/discovery.py, discovery_data.py and web/discovery.js | Event market-discovery feature | Live activity screens and economic headlines, Muse selection of ten sourced names, cache and explicit user handoff. |
 | marketmind/research.py | Event research workflow | Evidence packaging, risk context, conflict/unknown sections, honest quality metadata. |
 | marketmind/app.py | Event-focused API built on prior FastAPI experience | New research-only routes, not the inherited trading platform. |
 | marketmind/web/ | Event dashboard | Question form, linked findings, counterpoints, chart, unknowns, export. |
@@ -35,3 +36,9 @@ of acceptance, and the demo must still distinguish the new event contributions.
 A new local Git repository only records work from now forward. It cannot establish
 when inherited code was originally written. Preserve truthful dates and original
 history if it is available; do not backdate commits or invent authorship.
+
+## Idea acknowledgment
+
+The builder says the initial stock-analysis idea was suggested by a classmate. This
+acknowledges the idea suggestion without attributing the MarketMind code to that
+classmate or adding a development teammate. The contributor list remains solo.

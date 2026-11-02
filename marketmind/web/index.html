@@ -5,13 +5,21 @@
 <title>MarketMind · Follow the evidence</title>
 <link rel="stylesheet" href="/static/marketmind.css">
 <script src="/static/marketmind.js" defer></script>
+<script src="/static/discovery.js" defer></script>
 </head>
 <body>
 <header><a class="brand" href="/" aria-label="MarketMind home"><span class="mark">m<span>·</span></span> MarketMind</a><nav><span class="pill">MUSE AI RESEARCH</span><a href="/docs">API docs ↗</a></nav></header>
 <main>
 <section class="intro"><div class="eyebrow">A CLEARER VIEW OF THE MARKET</div><h1>Every market move<br>has more than <em>one story.</em></h1><p>Ask a question. Explore the evidence, challenge the narrative,<br class="desktop"> and understand the risks behind the numbers.</p></section>
-<section class="workspace">
-<aside><div class="eyebrow">01 / START AN INVESTIGATION</div><h2>What are you researching?</h2>
+<section id="market-radar" class="radar" aria-labelledby="radar-title">
+<div class="radar-heading"><div><div class="eyebrow">01 / DISCOVER THE MARKET</div><h2 id="radar-title">10 stocks in the spotlight</h2><p class="helper">Economic headlines, industry themes, and market activity. Choose a name to investigate.</p></div><button id="scan-refresh" class="secondary" type="button">Refresh scan &#8635;</button></div>
+<p id="radar-status" class="helper" role="status" aria-live="polite">Scanning market and economic headlines with Muse...</p>
+<div id="radar-content" hidden><div id="radar-overview" class="radar-overview"></div><div id="radar-warnings"></div><div id="radar-themes" class="radar-themes"></div><div id="radar-stocks" class="radar-stocks"></div>
+<details id="radar-details"><summary>Sources, coverage &amp; scan method</summary><p id="radar-method"></p><ul id="radar-limitations"></ul><div id="radar-sources"></div></details></div>
+<p class="helper">Research candidates, not buy recommendations. Coverage is limited to selected US-equity screens; quotes may be delayed. Scans are cached for 15 minutes.</p>
+</section>
+<section class="workspace" id="stock-research">
+<aside><div class="eyebrow">02 / RESEARCH A STOCK</div><h2>What are you researching?</h2>
 <form id="research-form"><label for="ticker">Stock symbol</label><input id="ticker" name="ticker" value="AMD" maxlength="12" required autocomplete="off">
 <label for="question">Your research question</label><textarea id="question" name="question" minlength="8" maxlength="1200" rows="4" required>What could explain AMD's recent price movement, and what evidence challenges that story?</textarea>
 <p class="helper" id="configuration">Checking model configuration…</p>

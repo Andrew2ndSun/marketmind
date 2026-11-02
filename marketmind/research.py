@@ -9,7 +9,7 @@ from .muse import synthesize
 from .validation import validate_citations
 
 
-def research(ticker: str, question: str) -> dict:
+def research(ticker: str, question: str, discovery_created_at: str | None = None) -> dict:
     started = time.monotonic()
     require_muse()  # Fail before fetching data if no Muse key is available.
     prices, fundamentals, news, warnings = live_inputs(ticker)
@@ -27,6 +27,13 @@ def research(ticker: str, question: str) -> dict:
          "publisher": "Yahoo Finance via yfinance", "retrieved_at": now},
         *[{"id": f"N{i}", "kind": "news", "retrieved_at": now, **article} for i, article in enumerate(news, 1)],
     ]
+    if discovery_created_at:
+        from .discovery import research_context
+        context = research_context(ticker, discovery_created_at)
+        if context:
+            evidence.extend(context)
+        else:
+            warnings.append("The selected market-radar snapshot expired or changed. This report uses stock-specific evidence only; rescan to restore the economic context.")
     result, inference = synthesize(question, evidence)
     validate_citations(result, evidence)
     return {

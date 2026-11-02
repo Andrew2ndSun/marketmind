@@ -79,7 +79,7 @@ $('research-form').addEventListener('submit', async event => {
   $('report').hidden=true; $('empty').hidden=true; currentReport=null;
   $('status').textContent='Collecting evidence and asking Muse to examine it. This may take a minute…';
   try {
-    const response=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticker:$('ticker').value,question:$('question').value})});
+    const response=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticker:$('ticker').value,question:$('question').value,discovery_created_at:$('research-form').dataset.radarTicker === $('ticker').value.trim().toUpperCase() ? $('research-form').dataset.radarCreatedAt : undefined})});
     const data=await response.json();
     if(!response.ok) throw new Error(typeof data.detail==='string' ? data.detail : 'Check the symbol and question, then retry.');
     render(data);

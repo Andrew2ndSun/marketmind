@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from .config import muse_settings
 from .errors import ResearchUnavailable, SynthesisError
 from .research import research
+from .discovery import scan_market
 
 WEB_DIR = Path(__file__).parent / "web"
 
@@ -21,6 +22,8 @@ class ResearchRequest(BaseModel):
         default="What does the recent evidence say about this stock's movement and risks?",
         min_length=8, max_length=1200,
     )
+
+    discovery_created_at: str | None = Field(default=None, max_length=64)
 
     @field_validator("ticker", mode="before")
     @classmethod
@@ -55,10 +58,19 @@ def create_app() -> FastAPI:
         return {"live_configured": bool(settings.api_key), "model": settings.model,
                 "provider": "meta-model-api"}
 
+    @app.get("/api/discovery")
+    def discover(refresh: bool = False):
+        try:
+            return scan_market(refresh=refresh)
+        except ResearchUnavailable as exc:
+            raise HTTPException(503, str(exc)) from exc
+        except SynthesisError as exc:
+            raise HTTPException(502, str(exc)) from exc
+
     @app.post("/api/research")
     def investigate(request: ResearchRequest):
         try:
-            return research(request.ticker, request.question)
+            return research(request.ticker, request.question, discovery_created_at=request.discovery_created_at)
         except ResearchUnavailable as exc:
             raise HTTPException(503, str(exc)) from exc
         except SynthesisError as exc:

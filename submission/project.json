@@ -23,5 +23,6 @@
   "video_format": "Captioned screen recording, no audio narration",
   "repository_source_published": true,
   "organizer_confirmation_source": "Builder confirmed organizer acceptance as an Indie Developer candidate in chat on November 2, 2026; no independent organizer record was inspected.",
-  "repository_verification": "Public GitHub metadata and unauthenticated README download verified after source push on November 2, 2026."
+  "repository_verification": "Public GitHub metadata and unauthenticated README download verified after source push on November 2, 2026.",
+  "video_feature_coverage": "The local recording predates market radar; re-record before claiming it demonstrates the new discovery feature."
 }
