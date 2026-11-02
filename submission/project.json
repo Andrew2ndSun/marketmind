@@ -1,0 +1,26 @@
+{
+  "project": "MarketMind",
+  "theme": "Build for Your World",
+  "track": "Indie Developer",
+  "contributors": [
+    "Andrew2ndSun"
+  ],
+  "representative": "Andrew2ndSun",
+  "public_repository_url": "https://github.com/Andrew2ndSun/marketmind",
+  "video_url": null,
+  "public_product_url": null,
+  "video_duration_seconds": 175.56,
+  "organizer_reuse_confirmation": true,
+  "rights_confirmed": false,
+  "official_rules_accepted": false,
+  "repository_public_verified": true,
+  "video_public_verified": false,
+  "platform_submitted": false,
+  "individual_meta_credits_claimed": null,
+  "deadline_pacific": "2026-11-04T18:00:00-08:00",
+  "note": "Only replace pending values with verified facts. Do not store credentials here.",
+  "local_video_path": "artifacts/marketmind-demo.webm",
+  "video_format": "Captioned screen recording, no audio narration",
+  "repository_source_published": false,
+  "organizer_confirmation_source": "Builder confirmed organizer acceptance as an Indie Developer candidate in chat on November 2, 2026; no independent organizer record was inspected."
+}
