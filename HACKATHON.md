@@ -91,12 +91,14 @@ Eastern. The representative must submit once on CV and verify all public links.
 
 ## Market discovery added during the event
 
-Before a single-stock investigation, the front page now scans US-equity activity and
-recent economic/business headlines. Muse connects source-grounded industry themes to
+Before a single-stock investigation, the front page displays a saved news-led scan
+updated every two hours in the background. Discovery reviews broad economic/business
+feeds across industries, without a fixed stock watchlist. Muse connects source-grounded industry themes to
 10 real candidates, with a reason, risk, quote and citation for each. The shortlist
 is a research starting point, not investment advice or an all-market prediction.
 Both discovery and deep research use Muse exclusively. Each research request makes
-one synthesis call; a separately cached discovery scan makes another.
+one synthesis call; each scheduled scan uses Muse for batched news-led discovery
+and a final ten-stock synthesis. Page loads make no model calls.
 
 The existing local 175.56-second video predates this feature. It still demonstrates
 the original research flow but should be re-recorded if the submission highlights

@@ -41,7 +41,7 @@ Run `python scripts/check_submission.py --run-tests --output artifacts/preflight
 for remaining gates. Read docs/HACKATHON_AUDIT.md and ORIGINAL_CONTRIBUTIONS.md before
 submission. Do not label this project fully compliant until pending items are resolved.
 
-## Market-radar verification
+## Initial market-radar verification (superseded by scheduled scan)
 
 The discovery feature was added after the original recording. The combined offline
 suite now has **23 passing tests**. A live Muse scan selected 10 stocks from 30 valid
@@ -50,3 +50,19 @@ checks passed at desktop and mobile widths for all ten cards, citations, cache r
 no automatic research on selection, and explicit manual research handoff. New tests
 verify original-source transfer and expired-context warnings. The original recording
 does not yet demonstrate the radar.
+
+## Scheduled news-led discovery update
+
+The expanded offline suite passes 31 tests, including read-only discovery GET requests,
+review of all collected headlines in batches, company/quote validation, a two-hour
+schedule, durable results, failed-update retention and original-source handoff.
+Discovery uses nine configured broad news/economic feeds and has no fixed stock
+watchlist. The server must remain running for scheduled scans; one worker is supported.
+The existing local video still predates the radar feature.
+
+A real Muse-only scheduled scan reviewed **158 recent headlines**, verified **47
+news-linked companies**, and saved exactly **10 stocks**, using three Muse calls.
+All nine feeds returned usable recent stories with no source warnings. Desktop
+(1440px) and mobile (390px) browser checks passed with zero JavaScript errors or
+automatic research requests. Startup reused the durable scan; page loads and reloads
+did not modify it. Evidence: ignored `artifacts/scheduled-radar-verification.json`.

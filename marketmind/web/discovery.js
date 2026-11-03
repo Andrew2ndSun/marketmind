@@ -64,23 +64,30 @@
       return item;
     }));
     byId('radar-limitations').replaceChildren(...data.limitations.map(text => node('li', text)));
-    byId('radar-method').textContent = `${data.scope}. Muse reviewed ${data.candidate_count} candidates and ${data.headline_count} headlines. Model: ${data.inference.model}. Input/output tokens: ${data.inference.input_tokens ?? 'unknown'} / ${data.inference.output_tokens ?? 'unknown'}. Quote times are included in each snapshot. Order is editorial, not a predicted return ranking.`;
-    byId('radar-status').textContent = `Scanned ${new Date(data.created_at).toLocaleString()} \u00b7 ${data.cached ? 'cached snapshot' : 'fresh scan'} \u00b7 ${data.candidate_count} candidates ? ${data.headline_count} headlines`;
+    const calls = [...(data.discovery_inference || []), data.inference];
+    const tokens = key => calls.every(call => Number.isFinite(call[key])) ? calls.reduce((sum, call) => sum + call[key], 0) : 'unknown';
+    byId('radar-method').textContent = `${data.scope}. Muse reviewed ${data.headline_count} headlines and ${data.candidate_count} verified candidates. Model: ${data.inference.model}. ${calls.length} model calls; total input/output tokens: ${tokens('input_tokens')} / ${tokens('output_tokens')}. Quote times are included in each saved snapshot. Order is editorial, not a predicted return ranking.`;
+    const age = Math.floor(data.cache_age_seconds / 60);
+    byId('radar-status').textContent = `Last scan ${new Date(data.created_at).toLocaleString()} \u00b7 ${age} minutes ago \u00b7 ${data.headline_count} headlines \u00b7 updates every 2 hours${data.running ? ' \u00b7 background scan running' : ''}${data.stale ? ' \u00b7 update overdue; showing the last successful list' : ''}`;
+    if (data.last_error) byId('radar-warnings').append(node('p', data.last_error, 'notice'));
   }
-  async function scan(refresh = false) {
+  async function scan() {
     byId('scan-refresh').disabled = true;
     byId('radar-status').className = 'helper';
-    byId('radar-status').textContent = 'Scanning market activity and economic headlines with Muse. This may take a minute...';
+    if (byId('radar-content').hidden) byId('radar-status').textContent = 'Loading the latest saved market scan...';
     try {
-      const response = await fetch('/api/discovery' + (refresh ? '?refresh=true' : ''));
+      const response = await fetch('/api/discovery');
       const data = await response.json();
       if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'The market scan is temporarily unavailable.');
-      renderRadar(data);
+      if (data.status === 'pending') {
+        byId('radar-status').textContent = data.last_error || data.message;
+      } else renderRadar(data);
     } catch (error) {
       byId('radar-status').className = 'helper error';
       byId('radar-status').textContent = `${error.message} You can still research any ticker below.`;
     } finally { byId('scan-refresh').disabled = false; }
   }
-  byId('scan-refresh').addEventListener('click', () => scan(true));
+  byId('scan-refresh').addEventListener('click', () => scan());
   scan();
+  setInterval(() => { if (!document.hidden) scan(); }, 60000);
 })();

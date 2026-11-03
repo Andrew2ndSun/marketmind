@@ -2,7 +2,7 @@
 
 Explainable stock research powered exclusively by Muse models through Meta Model API.
 Start with the market radar: Muse connects current economic/business headlines to
-10 stocks drawn from live market screens. Select one, or enter your own ticker, then
+10 stocks discovered from broad news coverage across industries. Select one, or enter your own ticker, then
 inspect cited findings and counterpoints, review historical risk,
 and export the full evidence-backed report as JSON.
 
@@ -26,8 +26,8 @@ python -m uvicorn main:app --host 127.0.0.1 --port 8000
 The default model is `muse-spark-1.3`; optionally set `MUSE_MODEL` to another Muse
 text model supported by chat completions. The endpoint is fixed to
 `https://api.meta.ai/v1/chat/completions`. There are no alternate inference providers,
-provider fallbacks, or fixed demo reports. Every successful research request calls Muse. Discovery uses its own Muse call,
-shared across page loads through a 15-minute in-memory cache.
+provider fallbacks, or fixed demo reports. Every successful research request calls Muse. Discovery runs every two hours in the background, using Muse for news-led company
+discovery and final selection. Its saved result is shared across page loads and restarts.
 Yahoo Finance via yfinance supplies financial evidence, not model inference.
 
 An optional local `.env` can define the same variables; process variables take precedence.
@@ -40,8 +40,9 @@ marketmind/
   app.py          FastAPI routes and dashboard serving
   config.py       Muse model and server-side key settings
   data.py         Yahoo prices, fundamentals, and ticker news
-  discovery_data.py  Activity screens, sector metadata and economic RSS feeds
-  discovery.py    Validated 10-stock Muse selection, cache and source handoff
+  discovery_data.py  Broad news feeds and company/quote verification
+  discovery.py    News-led Muse discovery, selection and source handoff
+  discovery_store.py  Durable snapshots and two-hour background schedule
   metrics.py      Historical returns, volatility, and drawdown
   muse.py         Direct HTTP calls to the official Muse API
   prompts.py      Evidence-constrained research instructions
@@ -61,7 +62,7 @@ main.py           Server entry point, .env and saved Windows environment loading
 | GET | `/api/health` | Service health |
 | GET | `/api/research/status` | Muse configuration presence, without secrets |
 | POST | `/api/research` | Live financial evidence plus cited Muse research |
-| GET | `/api/discovery` | Cached 10-stock market radar with themes and sources |
+| GET | `/api/discovery` | Read-only saved 10-stock radar, age and schedule status |
 
 Request example:
 
@@ -109,25 +110,34 @@ A local working app is not a completed hackathon submission.
 
 ## Market radar
 
-The home page scans automatically. It combines up to 30 US-listed equity candidates
-from Yahoo most-active, gainer and decliner screens with dated headlines from CNBC
-markets/economy, BBC business and Federal Reserve feeds. Headlines and quotes older
-than seven days are excluded. Sector/industry metadata comes from Yahoo snapshots.
-Muse selects exactly 10 distinct symbols from the real pool and explains possible
-industry links and risks. Each selection must cite its own quote and a headline.
-These are attention-based research candidates, not predicted winners or a complete
-market ranking. Economic connections are hypotheses, not verified price catalysts.
+The server scans in the background at startup if no recent result exists, then every
+two hours after a successful scan. Opening the page never starts a scan. The page
+reads the saved list immediately and checks for updates every minute; Reload saved
+list only fetches the saved result. On a fresh installation the page shows a pending
+message while the first background scan runs. Manual ticker research stays available.
+
+Discovery starts from news, with no fixed stock watchlist or activity screener. It
+reads every dated item from the last seven days in nine configured feeds: CNBC
+markets, economy, world, finance, technology and energy; BBC business and technology;
+and Federal Reserve press releases. Duplicate stories are removed. Muse reviews all
+collected headlines in batches of 80 and proposes news-linked companies, including
+possible indirect macroeconomic effects. Company search and fresh equity quotes
+independently verify the proposed symbols. Muse then selects exactly ten verified
+stocks, each with its own quote citation, a headline citation, a reason and a risk.
+The demo focuses on US-listed equities and ADRs. Feed coverage is broad but does not
+include every market story or full articles. No fixed first-30 candidate list is used.
+
+Results are atomically saved to ignored `.cache/market-radar/latest.json`, so restarts
+reuse a recent list. A failed scan preserves the previous list, displays an overdue
+indicator and retries after 15 minutes. The two-hour interval is checked every 30
+seconds while the server is running. This demo uses one server process; run one
+Uvicorn worker. When the server is stopped no job runs; restart catches up if due.
 
 A card's Research button fills the question and symbol; Investigate remains a separate
-user action. While the originating scan is available, its original headline and quote
-sources are included in deep research with R-prefixed IDs. Expired/replaced context
-produces an explicit warning. Muse-generated radar claims are not recycled as evidence.
-
-`GET /api/discovery?refresh=true` requests a new scan, with a one-minute refresh
-cooldown. Normal scans are cached 15 minutes per server process; restarting clears
-the cache. A second in-flight scan returns 503. Missing data or invalid model output
-never produces a canned top-ten list, and manual ticker research remains available.
-
-The optional request field `discovery_created_at` identifies a selected server-side
-scan. Clients do not submit arbitrary source payloads. Quotes may be delayed and
-sources can be incomplete. No full news articles are downloaded.
+user action. The optional `discovery_created_at` request field identifies the saved
+scan. Its original headline and quote evidence can be included in deep research with
+R-prefixed IDs while it remains the latest scan and is less than 24 hours old.
+Replaced/expired context produces an explicit warning. Generated radar claims are
+never reused as evidence. Quotes shown on cards are saved at scan time and may be
+delayed; they do not update live. These candidates are research starting points,
+not buy recommendations or predicted winners. Economic connections are hypotheses.

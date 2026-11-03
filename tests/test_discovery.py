@@ -1,30 +1,27 @@
-"""Market-radar freshness, validation, caching and failure-path tests."""
-import copy
+"""News-led radar, durable scheduling and read-only front page tests."""
 import json
 import os
 import threading
+import tempfile
 import unittest
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
-import httpx
 from fastapi.testclient import TestClient
 
-from marketmind import discovery
+from marketmind import discovery, discovery_store as store
 from marketmind.app import create_app
-from marketmind.discovery import MarketRadar, build_scan, scan_market, validate_radar, research_context
-from marketmind.discovery_data import normalize_quotes, parse_feed, collect_market
+from marketmind.discovery import MarketRadar, NewsDiscovery, build_scan, scan_market, validate_radar, research_context
+from marketmind.discovery_data import parse_feed, collect_news, resolve_company, resolve_candidates
 from marketmind.errors import ResearchUnavailable, SynthesisError
-
-RealClient = httpx.Client
-
 
 def inputs():
     now = datetime.now(timezone.utc).isoformat()
     candidates = [{"ticker":f"STK{i}","company":f"Invented company {i}","price":100.0+i,
                    "change_pct":float(i-5),"volume":100000,"currency":"USD","quote_at":now,
-                   "screeners":["most_actives"],"sector":"Technology","industry":"Software"}
+                   "sector":"Technology","industry":"Software"}
                   for i in range(12)]
     headlines = [{"title":"Invented economic headline","url":"https://example.com/economy",
                   "publisher":"Test source","published_at":now,"excerpt":"Invented test evidence."}]
@@ -42,33 +39,52 @@ def model_result():
 
 class DiscoveryTests(unittest.TestCase):
     def setUp(self):
-        patches = [patch.dict(os.environ,{"MUSE_API_KEY":"test-secret"},clear=True),
-                   patch.object(discovery,"_cached",None),patch.object(discovery,"_cached_at",0),
-                   patch.object(discovery,"_lock",threading.Lock())]
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        patches = [patch.dict(os.environ, {"MUSE_API_KEY": "test-secret"}, clear=True),
+                   patch.object(store, "DATA_DIR", Path(temporary.name)),
+                   patch.object(store, "_state", {"running": False, "last_error": None, "last_attempt_at": None}),
+                   patch.object(store, "_lock", threading.Lock())]
         for item in patches:
-            item.start();self.addCleanup(item.stop)
-        self.client=TestClient(create_app());self.addCleanup(self.client.close)
+            item.start(); self.addCleanup(item.stop)
+        self.client = TestClient(create_app()); self.addCleanup(self.client.close)
 
-    def transport(self, payload):
-        def respond(request):
-            self.assertEqual(str(request.url),'https://api.meta.ai/v1/chat/completions')
-            self.assertIn('EXACTLY 10',json.loads(request.content)['messages'][0]['content'])
-            return httpx.Response(200,json={"choices":[{"finish_reason":"stop","message":{"content":json.dumps(payload)}}],
-                                          "usage":{"prompt_tokens":120,"completion_tokens":80}})
-        return patch('marketmind.muse.httpx.Client',side_effect=lambda **kwargs:RealClient(**kwargs,transport=httpx.MockTransport(respond)))
+    def inference(self, prompt, data, schema):
+        usage = {"provider": "meta-model-api", "model": "muse-test"}
+        if schema is NewsDiscovery:
+            ids = [item["id"] for item in data["headlines"]]
+            return NewsDiscovery(companies=[{"company": f"Invented company {i}", "ticker": f"STK{i}", "evidence_ids": [ids[0]]} for i in range(12)]), usage
+        return MarketRadar.model_validate(model_result()), usage
 
-    def test_full_scan_selects_ten_real_pool_symbols_with_quotes_and_sources(self):
-        with patch('marketmind.discovery.collect_market',side_effect=inputs),self.transport(model_result()):
-            response=self.client.get('/api/discovery')
-        self.assertEqual(response.status_code,200)
-        data=response.json()
-        self.assertEqual(len(data['stocks']),10)
-        self.assertEqual(len({stock['ticker'] for stock in data['stocks']}),10)
-        self.assertEqual(data['candidate_count'],12)
-        self.assertEqual(data['headline_count'],1)
-        self.assertEqual(data['stocks'][0]['snapshot']['price'],100)
-        self.assertEqual(data['inference']['provider'],'meta-model-api')
-        self.assertNotIn('test-secret',response.text)
+    def build(self):
+        candidates, headlines, warnings = inputs()
+        with patch('marketmind.discovery.collect_news', return_value=(headlines, warnings)), patch('marketmind.discovery.resolve_candidates', return_value=(candidates, [])), patch('marketmind.discovery.complete_json', side_effect=self.inference):
+            return build_scan()
+
+    def save_scan(self):
+        data = self.build()
+        (store.DATA_DIR / 'latest.json').write_text(json.dumps(data), encoding='utf-8')
+        return data
+
+    def test_full_scan_is_news_led_and_returns_ten_verified_symbols(self):
+        data = self.build()
+        self.assertEqual(len(data['stocks']), 10)
+        self.assertEqual(data['candidate_count'], 12)
+        self.assertEqual(data['stocks'][0]['snapshot']['price'], 100)
+        self.assertEqual(data['scan_interval_seconds'], 7200)
+        self.assertIn('no fixed watchlist', data['scope'])
+
+    def test_all_headlines_are_reviewed_in_batches_without_first_n_truncation(self):
+        candidates, headlines, _ = inputs()
+        headlines = [{**headlines[0], 'title': f'Headline {i}'} for i in range(171)]
+        visited = []
+        def complete(prompt, data, schema):
+            if schema is NewsDiscovery: visited.extend(item['id'] for item in data['headlines'])
+            return self.inference(prompt, data, schema)
+        with patch('marketmind.discovery.collect_news', return_value=(headlines, [])), patch('marketmind.discovery.resolve_candidates', return_value=(candidates, [])), patch('marketmind.discovery.complete_json', side_effect=complete):
+            result = build_scan()
+        self.assertEqual(visited, [f'H{i}' for i in range(1,172)])
+        self.assertEqual(result['headline_count'], 171)
 
     def test_duplicate_invented_and_cross_stock_citations_are_rejected(self):
         candidates,headlines,_=inputs()
@@ -86,40 +102,74 @@ class DiscoveryTests(unittest.TestCase):
         result=model_result();result['stocks'].pop()
         with self.assertRaises(ValueError):MarketRadar.model_validate(result)
 
-    def test_invalid_model_scan_is_502_and_not_cached(self):
-        result=model_result();result['stocks'][0]['ticker']='INVENTED'
-        with patch('marketmind.discovery.collect_market',side_effect=inputs),self.transport(result):
-            response=self.client.get('/api/discovery')
-        self.assertEqual(response.status_code,502)
-        self.assertIsNone(discovery._cached)
+    def test_unknown_news_extraction_citation_is_rejected(self):
+        def invalid(prompt, data, schema):
+            result, usage = self.inference(prompt, data, schema)
+            if schema is NewsDiscovery: result.companies[0].evidence_ids = ['H999']
+            return result, usage
+        with patch('marketmind.discovery.collect_news', return_value=(inputs()[1], [])), patch('marketmind.discovery.complete_json', side_effect=invalid), patch('marketmind.discovery.resolve_candidates') as resolve:
+            with self.assertRaises(SynthesisError): build_scan()
+            resolve.assert_not_called()
 
-    def test_cache_reuses_result_and_enforces_refresh_cooldown(self):
-        with patch('marketmind.discovery.build_scan',return_value={'stocks':[{'ticker':'STK0'}]}) as build:
-            with patch('marketmind.discovery.time.monotonic',return_value=1000):
-                self.assertFalse(scan_market()['cached'])
-            with patch('marketmind.discovery.time.monotonic',return_value=1020):
-                cached=scan_market(refresh=True)
-                self.assertTrue(cached['cached'])
-                cached['stocks'][0]['ticker']='MUTATED'
-                self.assertEqual(scan_market()['stocks'][0]['ticker'],'STK0')
-            self.assertEqual(build.call_count,1)
-            with patch('marketmind.discovery.time.monotonic',return_value=1061):
-                self.assertFalse(scan_market(refresh=True)['cached'])
-            self.assertEqual(build.call_count,2)
-            with patch('marketmind.discovery.time.monotonic',return_value=2000):
-                self.assertFalse(scan_market()['cached'])
+    def test_get_is_read_only_even_with_refresh_query_and_no_key(self):
+        self.save_scan()
+        with patch.dict(os.environ, {}, clear=True), patch('marketmind.discovery.build_scan') as build:
+            for url in ['/api/discovery', '/api/discovery?refresh=true']:
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(len(response.json()['stocks']), 10)
+                self.assertNotIn('test-secret', response.text)
+            build.assert_not_called()
 
-    def test_concurrent_scan_is_rejected_without_starting_second_call(self):
-        discovery._lock.acquire()
+    def test_first_visit_pending_does_not_start_inference(self):
+        with patch('marketmind.discovery.build_scan') as build:
+            self.assertEqual(self.client.get('/api/discovery').json()['status'], 'pending')
+            build.assert_not_called()
+
+    def test_two_hour_schedule_persists_and_survives_memory_reset(self):
+        data = self.build()
+        with patch('marketmind.discovery.build_scan', return_value=data) as build:
+            self.assertTrue(store.update_if_due())
+            self.assertFalse(store.update_if_due())
+            build.assert_called_once()
+            created = datetime.fromisoformat(data['created_at'])
+            with patch.object(store, 'utcnow', return_value=created+timedelta(seconds=7199)):
+                self.assertFalse(store.update_if_due())
+            with patch.object(store, 'utcnow', return_value=created+timedelta(seconds=7201)):
+                self.assertTrue(store.update_if_due())
+            self.assertEqual(build.call_count, 2)
+        self.assertEqual(store.load_snapshot()['created_at'], data['created_at'])
+        self.assertEqual(scan_market()['stocks'][0]['ticker'], 'STK0')
+
+    def test_failed_update_keeps_last_good_snapshot_and_retries_after_fifteen_minutes(self):
+        data = self.save_scan()
+        created = datetime.fromisoformat(data['created_at'])
+        with patch.object(store, 'utcnow', return_value=created+timedelta(hours=3)), patch('marketmind.discovery.build_scan', side_effect=RuntimeError('private upstream detail')) as build:
+            self.assertFalse(store.update_if_due())
+            self.assertFalse(store.update_if_due())
+            build.assert_called_once()
+            result = scan_market()
+            self.assertTrue(result['stale'])
+            self.assertEqual(result['stocks'], data['stocks'])
+            self.assertNotIn('private upstream detail', json.dumps(result))
+        with patch.object(store, 'utcnow', return_value=created+timedelta(hours=3,minutes=16)), patch('marketmind.discovery.build_scan', return_value=data):
+            self.assertTrue(store.update_if_due())
+
+    def test_concurrent_workers_do_not_start_second_scan(self):
+        store._lock.acquire()
         try:
             with patch('marketmind.discovery.build_scan') as build:
-                with self.assertRaises(ResearchUnavailable):scan_market()
+                self.assertFalse(store.update_if_due())
                 build.assert_not_called()
-        finally:discovery._lock.release()
+        finally: store._lock.release()
 
-    def test_missing_key_fails_before_fetching_market(self):
-        with patch.dict(os.environ,{},clear=True),patch('marketmind.discovery.collect_market') as collect:
-            self.assertEqual(self.client.get('/api/discovery').status_code,503)
+    def test_corrupt_saved_data_is_pending_and_does_not_crash_front_page(self):
+        (store.DATA_DIR/'latest.json').write_text('{broken', encoding='utf-8')
+        self.assertEqual(scan_market()['status'], 'pending')
+
+    def test_missing_key_fails_before_news_collection(self):
+        with patch.dict(os.environ, {}, clear=True), patch('marketmind.discovery.collect_news') as collect:
+            with self.assertRaises(ResearchUnavailable): build_scan()
             collect.assert_not_called()
 
     def test_feed_filters_old_future_undated_and_unsafe_items(self):
@@ -131,39 +181,59 @@ class DiscoveryTests(unittest.TestCase):
         self.assertEqual([r['title'] for r in result],['Valid'])
         self.assertEqual(result[0]['excerpt'],'Brief excerpt')
 
-    def test_quotes_filter_invalid_and_stale_and_merge_screeners(self):
-        now=datetime.now(timezone.utc)
-        valid={'symbol':'ABC','shortName':'Company','quoteType':'EQUITY','regularMarketPrice':100,
-               'regularMarketChangePercent':2,'regularMarketTime':now.timestamp()}
-        bad=[{**valid,'symbol':'ZERO','regularMarketPrice':0}, {**valid,'symbol':'OLD','regularMarketTime':(now-timedelta(days=8)).timestamp()},
-             {**valid,'symbol':'NAN','regularMarketChangePercent':float('nan')}, {**valid,'symbol':'FUND','quoteType':'ETF'}]
-        result=normalize_quotes([('most_actives',[valid,*bad]),('day_gainers',[valid])],now)
-        self.assertEqual(len(result),1)
-        self.assertEqual(result[0]['screeners'],['most_actives','day_gainers'])
+    def test_feed_keeps_more_than_eight_recent_stories(self):
+        now = datetime.now(timezone.utc)
+        items = ''.join(f'<item><title>Story {i}</title><link>https://example.com/{i}</link><pubDate>{format_datetime(now)}</pubDate></item>' for i in range(25))
+        self.assertEqual(len(parse_feed(('<rss><channel>'+items+'</channel></rss>').encode(), 'Test', now)),25)
 
-    def test_collection_requires_ten_candidates_and_recent_news(self):
-        with patch('marketmind.discovery_data.yf.screen',return_value={'quotes':[]}),patch('marketmind.discovery_data.fetch_headlines',return_value=[]):
-            with self.assertRaises(ResearchUnavailable):collect_market()
-        candidates,_,_=inputs()
-        with patch('marketmind.discovery_data.yf.screen',return_value={'quotes':[]}),patch('marketmind.discovery_data.fetch_headlines',return_value=[]),patch('marketmind.discovery_data.normalize_quotes',return_value=candidates),patch('marketmind.discovery_data.enrich_sector',side_effect=lambda c:c):
-            with self.assertRaises(ResearchUnavailable):collect_market()
+    def test_news_collection_deduplicates_and_requires_recent_news(self):
+        with patch('marketmind.discovery_data.fetch_headlines', return_value=inputs()[1]):
+            news, _ = collect_news()
+            self.assertEqual(len(news), 1)
+        with patch('marketmind.discovery_data.fetch_headlines', return_value=[]):
+            with self.assertRaises(ResearchUnavailable): collect_news()
 
-    def test_selected_stock_passes_original_sources_not_generated_claims(self):
-        with patch('marketmind.discovery.collect_market',side_effect=inputs),self.transport(model_result()):
-            data=scan_market()
-        context=research_context('STK0',data['created_at'])
-        self.assertEqual({item['id'] for item in context},{'RC1','RH1'})
+    def test_company_resolution_requires_matching_identity_and_fresh_equity_quote(self):
+        proposal = {'company': 'Example Company', 'ticker': 'ABC', 'evidence_ids':['H1']}
+        valid = {'symbol':'ABC', 'quoteType':'EQUITY', 'regularMarketPrice':100, 'regularMarketChangePercent':2, 'regularMarketTime':datetime.now(timezone.utc).timestamp()}
+        with patch('marketmind.discovery_data.yf.Search') as search, patch('marketmind.discovery_data.yf.Ticker') as ticker:
+            search.return_value.quotes=[{'symbol':'ABC','quoteType':'EQUITY'}]
+            ticker.return_value.get_info.return_value=valid
+            self.assertEqual(resolve_company(proposal)['ticker'], 'ABC')
+            for changes in [{'symbol':'OTHER'}, {'quoteType':'ETF'}, {'regularMarketPrice':0}, {'regularMarketChangePercent':float('nan')}, {'regularMarketTime':(datetime.now(timezone.utc)-timedelta(days=8)).timestamp()}]:
+                ticker.return_value.get_info.return_value={**valid, **changes}
+                self.assertIsNone(resolve_company(proposal))
+            search.return_value.quotes=[{'symbol':'OTHER','quoteType':'EQUITY'}]
+            self.assertIsNone(resolve_company(proposal))
+
+    def test_verification_requires_at_least_ten_unique_valid_symbols(self):
+        with patch('marketmind.discovery_data.resolve_company', return_value=None):
+            with self.assertRaises(ResearchUnavailable): resolve_candidates([{}]*12)
+
+    def test_selected_stock_uses_saved_original_sources_and_expires_after_day(self):
+        data = self.save_scan()
+        context = research_context('STK0', data['created_at'])
+        self.assertEqual({item['id'] for item in context}, {'RC1','RH1'})
         self.assertTrue(all('reason' not in item for item in context))
-        self.assertEqual(research_context('INVENTED',data['created_at']),[])
-        self.assertEqual(research_context('STK0','old-scan'),[])
-        with patch('marketmind.discovery.time.monotonic',return_value=discovery._cached_at+901):
-            self.assertEqual(research_context('STK0',data['created_at']),[])
+        self.assertEqual(research_context('STK0', 'old'), [])
+        self.assertEqual(research_context('INVENTED', data['created_at']), [])
+        class Later(datetime):
+            @classmethod
+            def now(cls, tz=None): return datetime.fromisoformat(data['created_at'])+timedelta(days=2)
+        with patch.object(discovery, 'datetime', Later):
+            self.assertEqual(research_context('STK0', data['created_at']), [])
+
+    def test_scheduler_starts_at_app_start_and_stops_at_shutdown(self):
+        with patch('marketmind.discovery_store.start_scheduler') as start:
+            stop, worker = start.return_value = (Mock(), Mock())
+            with TestClient(create_app()): start.assert_called_once()
+            stop.set.assert_called_once()
+            worker.join.assert_called_once()
 
     def test_deep_research_receives_selected_radar_headlines(self):
         from marketmind.schemas import Synthesis
         from tests.fixtures import inputs as stock_inputs, completion as stock_completion
-        with patch('marketmind.discovery.collect_market',side_effect=inputs),self.transport(model_result()):
-            scan=scan_market()
+        scan=self.save_scan()
         result=Synthesis.model_validate_json(stock_completion()['choices'][0]['message']['content'])
         with patch('marketmind.research.live_inputs',side_effect=lambda ticker:stock_inputs()),patch('marketmind.research.synthesize',return_value=(result,{})) as synthesize:
             response=self.client.post('/api/research',json={'ticker':'STK0','discovery_created_at':scan['created_at']})
@@ -187,4 +257,5 @@ class DiscoveryTests(unittest.TestCase):
         self.assertEqual(self.client.get('/static/discovery.js').status_code,200)
 
 
-if __name__=='__main__':unittest.main()
+
+if __name__=='__main__': unittest.main()

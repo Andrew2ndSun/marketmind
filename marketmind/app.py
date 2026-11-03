@@ -1,5 +1,6 @@
 """MarketMind's API and same-origin web dashboard."""
 import logging
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -36,9 +37,20 @@ class ResearchRequest(BaseModel):
         return value.strip() if isinstance(value, str) else value
 
 
+@asynccontextmanager
+async def lifespan(app):
+    from .discovery_store import start_scheduler
+    stop, worker = start_scheduler()
+    try:
+        yield
+    finally:
+        stop.set()
+        worker.join(timeout=0.1)
+
+
 def create_app() -> FastAPI:
     logging.basicConfig(level=logging.INFO)
-    app = FastAPI(title="MarketMind | Muse Stock Research", version="4.0.0")
+    app = FastAPI(title="MarketMind | Muse Stock Research", version="4.1.0", lifespan=lifespan)
     app.mount("/static", StaticFiles(directory=str(WEB_DIR)), name="static")
 
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
@@ -59,9 +71,9 @@ def create_app() -> FastAPI:
                 "provider": "meta-model-api"}
 
     @app.get("/api/discovery")
-    def discover(refresh: bool = False):
+    def discover():
         try:
-            return scan_market(refresh=refresh)
+            return scan_market()
         except ResearchUnavailable as exc:
             raise HTTPException(503, str(exc)) from exc
         except SynthesisError as exc:

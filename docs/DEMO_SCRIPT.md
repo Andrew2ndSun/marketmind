@@ -6,7 +6,7 @@ A captioned local recording is useful, but a final public video URL must be chec
 
 | Time | Screen | Narration / caption |
 | --- | --- | --- |
-| 0:00-0:20 | Market radar and industry themes | Muse scans current economic/business headlines and market activity, then selects 10 sourced research candidates. Theme: Build for Your World. |
+| 0:00-0:20 | Market radar and industry themes | A scheduled Muse job reviews broad economic/business news and saves 10 sourced research candidates every two hours. Theme: Build for Your World. |
 | 0:20-0:35 | Select a radar stock to fill the form | I adapted an earlier data-fetching foundation. During this event I built the market radar, Muse research integration, structured cited reports, evidence dashboard and validation. The inherited trading code is excluded. |
 | 0:35-1:05 | Click Investigate for the selected stock; show real loading | This request collects completed price history, provider fundamentals and available ticker news, then asks Muse Spark to reason over bounded evidence. There is no other model provider or canned response. |
 | 1:05-1:30 | Brief and a citation | The report separates observations from hypotheses. Clicking M1 shows the exact numeric evidence and timestamps. Citation IDs are checked; that alone does not prove the claim is true. |
@@ -30,4 +30,4 @@ A real captioned local recording is available at `artifacts/marketmind-demo.webm
 
 The current local recording predates the market radar and needs re-recording to show the new feature. Do not imply the radar appears in that older footage.
 
-The recorder now waits for a real radar scan and selects its first candidate before explicitly starting full research. It stops if the live calls exceed the allotted recording segments instead of substituting fake results.
+Start the server and allow the first scheduled radar scan to finish before recording. The recorder waits for the saved real radar result and selects its first candidate before explicitly starting full research. It stops if the live calls exceed the allotted recording segments instead of substituting fake results.

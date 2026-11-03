@@ -19,7 +19,7 @@ structured cited research brief. The dashboard links findings to evidence, shows
 interpretations and gaps, and exports the report as JSON.
 
 **Meta tooling:** Official Meta Model API, Muse-only inference, server-side credential loading,
-bounded evidence prompts and structured synthesis. One synthesis request per investigation, plus a separately cached Muse market-discovery call;
+bounded evidence prompts and structured synthesis. One synthesis request per investigation, plus scheduled Muse news-discovery batches and final selection every two hours;
 not autonomous multi-agent coordination. No partner inference is required.
 
 **New event work:** Market discovery with ten stock candidates and economic themes, Muse integration, structured evidence/citation contract, research API and

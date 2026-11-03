@@ -16,8 +16,8 @@ Dependency licenses do not grant rights to unrelated market data, news or model 
 
 Meta Model API supplies Muse inference under the account's applicable terms. Yahoo
 Finance supplies prices, provider snapshots and headline excerpts through yfinance.
-The discovery feature additionally reads public CNBC markets/economy RSS, BBC business
-RSS and Federal Reserve press-release RSS, using headlines and short feed excerpts.
+The discovery feature additionally reads public CNBC markets/economy/world/finance/technology/energy RSS,
+BBC business/technology RSS and Federal Reserve press-release RSS, using headlines and short feed excerpts.
 Source links and provenance are included in reports; citation does not establish a
 right to redistribute the underlying data. Do not commit bulk market/news dumps to
 the public repository. Tests use invented data written for this project.
