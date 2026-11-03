@@ -41,6 +41,7 @@ def audit(run_tests=False):
     add("public_repository", bool(manifest.get("public_repository_url")) and manifest.get("repository_public_verified") is True and manifest.get("repository_source_published") is True, "Verify public visibility and actual source publication; an empty public repository is insufficient.")
     seconds = manifest.get("video_duration_seconds")
     add("three_minute_video", isinstance(seconds, (int, float)) and 0 < seconds <= 180, "Final recording must be at most three minutes and identify new contributions.")
+    add("current_feature_demo", manifest.get("video_includes_scheduled_discovery") is True, "Record the saved two-hour radar, original-source handoff and explicit Muse research in the current demo.")
     add("public_video", bool(manifest.get("video_url")) and manifest.get("video_public_verified") is True, "Check the final hosted video while signed out.")
     add("cv_submission", manifest.get("platform_submitted") is True, "Representative must submit once and list all contributors.")
     deadline = datetime.fromisoformat(manifest["deadline_pacific"])

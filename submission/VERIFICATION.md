@@ -1,68 +1,72 @@
-# Verification record - November 2, 2026
+# Current verification record - November 2, 2026
 
-## Verified locally
+This record describes the current scheduled news-led MarketMind workflow. Earlier
+recordings and receipts are superseded and retained locally in ignored artifacts.
 
-- Offline application regression suite: **10 tests passed**.
-- Muse-only routing and credential handling, invalid JSON/citations/truncation,
-  redirect refusal, API validation, risk math and news envelope behavior are tested.
-- Staged-source whitespace check passed.
-- Source key-pattern scan found no matching key-like values. This limited scan is
-  not a guarantee; actual keys remain in the server environment, not the source.
-- Real captioned demo recorded from the working app: **175.56 seconds** (2:55.56).
-- Real inference: `muse-spark-1.3`, `meta-model-api`, 834 input / 1,841 output tokens.
-- The recording run had **zero usable news excerpts**; the video and report make
-  that limitation explicit and do not claim news-based causal attribution.
-- Sample frames at 0:05, 1:20 and 2:36 were visually inspected for product content,
-  evidence visibility, readable captions and real source-code presentation.
-- Local video: `artifacts/marketmind-demo.webm`; no audio narration.
-- `artifacts/` is ignored by Git. Demo reports and video are excluded from the
-  reviewable source archive.
+## Application and scheduled discovery
 
-## Prepared, not externally verified
+- **31 offline tests pass.** Coverage includes official Muse routing, key handling,
+  schema/citation/truncation failures, numerical risk, full-headline batch coverage,
+  company/quote verification, the two-hour schedule, durable results, concurrent-job
+  prevention, read-only page requests, failed-update retention and source handoff.
+- A real Muse scan reviewed **158 recent headlines**, independently verified **47
+  companies**, and saved **10 stocks**. All nine configured feeds returned usable
+  recent stories with no source warnings. The scan used three Muse calls.
+- Desktop (1440px) and mobile (390px) checks passed: ten cards, no horizontal overflow,
+  no JavaScript errors and no automatic research requests on selection. Page loading
+  and saved-list reloading did not change the snapshot or trigger inference.
+- A server restart reused the durable list without another model call. The server
+  must remain running for scheduled updates; this demo supports one worker.
+- Coverage is all recent items returned by the configured feeds, not every market
+  story or every exchange. The equity focus is US listings and ADRs. Quotes are saved
+  snapshots and may be delayed. Economic links are research hypotheses.
 
-The source was published to https://github.com/Andrew2ndSun/marketmind using local
-Git after the connector reported insufficient write permissions. Public visibility
-and an unauthenticated README download were verified. Source, contribution disclosure,
-configuration examples and tests are included; recordings and local exports are excluded.
+Evidence: ignored `artifacts/scheduled-radar-verification.json` and saved runtime data
+in `.cache/market-radar/`. Cached news, quotes and reports are excluded from Git.
 
-The initial app source commit is fda90276092f4e4a92b196046cdd6f5c1f6cfefb. The offline
-GitHub Actions workflow has started; consult the repository Actions page for current
-hosted results. Local application tests passed. No CV submission is claimed.
+## Updated real demo
 
-The captioned demo is a local draft: check its full playback and add narration if
-desired before hosting it. No public video URL or signed-out access has been verified.
+- Local video: `artifacts/marketmind-demo.webm`, **175.60 seconds** (2:55.60).
+- Recorded November 2, 2026, Pacific time; captions only, with no audio narration.
+- Full local browser playback passed. Thirteen timestamped frames were visually
+  inspected across the complete presentation. No recording browser errors occurred.
+- Shows the saved two-hour radar, broad news coverage and method, card selection,
+  explicit live research, citations, original radar sources, counterpoints, historical
+  risk, Muse metadata, JSON export, and new scheduling code with prior work disclosed.
+- Exactly **one** investigation was explicitly requested, for **AAPL**.
+- Real inference: `muse-spark-1.3`, `meta-model-api`,
+  **1,427 input / 2,248 output tokens**.
+- Research received **2 original radar headlines** and its own quote source.
+  The provider returned **0 separate ticker-news excerpts**. The recording and report
+  make that gap explicit; the original radar sources remain available for inspection.
+- `artifacts/demo-report.json` is the actual downloaded research/evidence export.
+- Receipt: `artifacts/recording-receipt.json`; sampled frames use
+  `artifacts/demo-current-*.png`. Previous video/report/receipt: `artifacts/previous-demo/`.
+- Video SHA-256: `80868a3f28faa09ec796b868b781e68efc08e2c84e1d7be11844f4c4863166d6`.
 
-The builder confirmed a solo Indie Developer entry, with Andrew2ndSun as contributor
-and representative, and reports organizer acceptance of the adapted foundation.
-Ownership/data rights, official rule acceptance, individually claimed credits and
-final platform submission still require participant confirmation. A successful API call does not prove free credits applied.
+## Source publication and packaging
 
-Run `python scripts/check_submission.py --run-tests --output artifacts/preflight.json`
-for remaining gates. Read docs/HACKATHON_AUDIT.md and ORIGINAL_CONTRIBUTIONS.md before
-submission. Do not label this project fully compliant until pending items are resolved.
+Public source: https://github.com/Andrew2ndSun/marketmind. Public visibility and an
+unauthenticated README download were previously verified. The offline GitHub Actions
+workflow for the scheduled-discovery implementation passed. Current source updates
+and hosted check status are recorded by the latest repository commit/Actions run.
 
-## Initial market-radar verification (superseded by scheduled scan)
+`artifacts/MarketMind-source-review.zip` is regenerated from tracked source. Its
+commit, file count and SHA-256 are in `artifacts/source-package-receipt.json`.
+It excludes credentials, runtime snapshots, generated reports and video.
 
-The discovery feature was added after the original recording. The combined offline
-suite now has **23 passing tests**. A live Muse scan selected 10 stocks from 30 valid
-Yahoo activity candidates and 26 recent headlines, with no source warnings. Browser
-checks passed at desktop and mobile widths for all ten cards, citations, cache refresh,
-no automatic research on selection, and explicit manual research handoff. New tests
-verify original-source transfer and expired-context warnings. The original recording
-does not yet demonstrate the radar.
+The source secret-pattern check and whitespace check pass. Pattern scanning has
+limits and does not establish rights, complete secret absence or platform compliance.
 
-## Scheduled news-led discovery update
+## Remaining participant actions
 
-The expanded offline suite passes 31 tests, including read-only discovery GET requests,
-review of all collected headlines in batches, company/quote validation, a two-hour
-schedule, durable results, failed-update retention and original-source handoff.
-Discovery uses nine configured broad news/economic feeds and has no fixed stock
-watchlist. The server must remain running for scheduled scans; one worker is supported.
-The existing local video still predates the radar feature.
+Public video hosting and signed-out playback are **pending**. No public product
+hosting or CV submission is claimed. The entry is solo, Indie Developer, with
+Andrew2ndSun as contributor/representative; organizer acceptance of the earlier
+foundation is builder-reported. Rights confirmation, official rule acceptance,
+individually claimed credits and final submission remain participant actions.
+The initial idea suggestion from a classmate is acknowledged in the contribution map.
 
-A real Muse-only scheduled scan reviewed **158 recent headlines**, verified **47
-news-linked companies**, and saved exactly **10 stocks**, using three Muse calls.
-All nine feeds returned usable recent stories with no source warnings. Desktop
-(1440px) and mobile (390px) browser checks passed with zero JavaScript errors or
-automatic research requests. Startup reused the durable scan; page loads and reloads
-did not modify it. Evidence: ignored `artifacts/scheduled-radar-verification.json`.
+Run `python scripts/check_submission.py --run-tests --output artifacts/preflight.json`.
+A passing local demo does not mean every submission gate is complete. The supplied
+deadline is November 4, 2026 at 6:00 PM Pacific / 9:00 PM Eastern.

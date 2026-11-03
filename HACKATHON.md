@@ -15,7 +15,7 @@ counterarguments, historical risk, and unanswered questions.
 1. Open the local dashboard with your Windows `MUSE_API_KEY` configured and inspect
    the 10-stock market radar, economic themes and sources. Select a stock to fill
    the research form; the user still chooses when to run full research.
-2. Ask: "What could explain AMD's recent movement, and what challenges that story?"
+2. Use the selected theme question, or enter another ticker and your own research question.
 3. Show the research brief and follow a citation into the evidence trail.
 4. Compare supporting findings with counterpoints. Explain the limits of causal claims.
 5. Show historical volatility/drawdown and the unanswered questions.
@@ -100,6 +100,8 @@ Both discovery and deep research use Muse exclusively. Each research request mak
 one synthesis call; each scheduled scan uses Muse for batched news-led discovery
 and a final ten-stock synthesis. Page loads make no model calls.
 
-The existing local 175.56-second video predates this feature. It still demonstrates
-the original research flow but should be re-recorded if the submission highlights
-the radar. See the updated timed script in docs/DEMO_SCRIPT.md.
+The current 175.60-second captioned local walkthrough demonstrates the scheduled
+news radar and one real Muse investigation, including original-source handoff and
+JSON export. Full local playback passed. See submission/VERIFICATION.md for evidence
+and docs/DEMO_SCRIPT.md for the timed presentation. Hosting and final submission
+remain separate participant actions.

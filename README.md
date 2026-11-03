@@ -2,8 +2,9 @@
 
 Explainable stock research powered exclusively by Muse models through Meta Model API.
 Start with the market radar: Muse connects current economic/business headlines to
-10 stocks discovered from broad news coverage across industries. Select one, or enter your own ticker, then
-inspect cited findings and counterpoints, review historical risk,
+10 stocks discovered from broad news coverage across industries, refreshed every two
+hours in the background. Select one, or enter your own ticker, then inspect cited
+findings and counterpoints, review historical risk,
 and export the full evidence-backed report as JSON.
 
 ## Run
@@ -26,7 +27,8 @@ python -m uvicorn main:app --host 127.0.0.1 --port 8000
 The default model is `muse-spark-1.3`; optionally set `MUSE_MODEL` to another Muse
 text model supported by chat completions. The endpoint is fixed to
 `https://api.meta.ai/v1/chat/completions`. There are no alternate inference providers,
-provider fallbacks, or fixed demo reports. Every successful research request calls Muse. Discovery runs every two hours in the background, using Muse for news-led company
+provider fallbacks, or fixed demo reports. Every successful research request calls Muse. Discovery runs every two hours in the
+background, using Muse for news-led company
 discovery and final selection. Its saved result is shared across page loads and restarts.
 Yahoo Finance via yfinance supplies financial evidence, not model inference.
 
@@ -86,7 +88,9 @@ python -m unittest discover -s tests -v
 
 Tests use mocked HTTP and invented data confined to `tests/`; they make no live API
 calls. They cover the full API pipeline, official endpoint restriction, key handling,
-invalid output, provider errors, removed routes, news formats, and historical risk math.
+invalid output, provider errors, removed routes, news formats, historical risk math,
+full-headline batch coverage, symbol verification, durable scheduling, read-only page
+loads, failed-update retention and original-source handoff. The suite has 31 tests.
 
 ## Limits
 
@@ -141,3 +145,16 @@ Replaced/expired context produces an explicit warning. Generated radar claims ar
 never reused as evidence. Quotes shown on cards are saved at scan time and may be
 delayed; they do not update live. These candidates are research starting points,
 not buy recommendations or predicted winners. Economic connections are hypotheses.
+
+## Demo and source package
+
+The captioned local walkthrough is `artifacts/marketmind-demo.webm`. It demonstrates
+the saved news radar, explicit Muse research, citations, counterpoints, risk, export
+and new event code. `submission/VERIFICATION.md` records its measured duration and
+evidence. Optional recording instructions are in `docs/DEMO_SCRIPT.md`. Videos, saved
+news/quotes and exported reports remain ignored by Git. The review archive
+`artifacts/MarketMind-source-review.zip` contains tracked source only.
+
+The entry is solo, Indie Developer, with Andrew2ndSun as representative. Public video
+hosting, rights confirmation, official rules acceptance and CV submission remain
+participant actions; they are not established by a successful local demonstration.

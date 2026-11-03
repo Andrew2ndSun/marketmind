@@ -33,7 +33,7 @@ def research(ticker: str, question: str, discovery_created_at: str | None = None
         if context:
             evidence.extend(context)
         else:
-            warnings.append("The selected market-radar snapshot expired or changed. This report uses stock-specific evidence only; rescan to restore the economic context.")
+            warnings.append("The selected market-radar snapshot expired or changed. This report uses stock-specific evidence only; reload the saved list and select a stock again to restore the economic context.")
     result, inference = synthesize(question, evidence)
     validate_citations(result, evidence)
     return {

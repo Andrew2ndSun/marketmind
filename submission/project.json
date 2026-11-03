@@ -9,7 +9,7 @@
   "public_repository_url": "https://github.com/Andrew2ndSun/marketmind",
   "video_url": null,
   "public_product_url": null,
-  "video_duration_seconds": 175.56,
+  "video_duration_seconds": 175.6,
   "organizer_reuse_confirmation": true,
   "rights_confirmed": false,
   "official_rules_accepted": false,
@@ -24,5 +24,9 @@
   "repository_source_published": true,
   "organizer_confirmation_source": "Builder confirmed organizer acceptance as an Indie Developer candidate in chat on November 2, 2026; no independent organizer record was inspected.",
   "repository_verification": "Public GitHub metadata and unauthenticated README download verified after source push on November 2, 2026.",
-  "video_feature_coverage": "The local recording predates market radar; re-record before claiming it demonstrates the new discovery feature."
+  "video_feature_coverage": "Saved ten-stock news-led radar, two-hour schedule, broad feed coverage, original-source handoff, explicit real Muse investigation, citations, counterpoints, historical risk, JSON export and new event code/prior-work disclosure.",
+  "video_includes_scheduled_discovery": true,
+  "local_video_recorded_at": "2026-11-02T16:30:06.787636-08:00",
+  "local_video_sha256": "80868a3f28faa09ec796b868b781e68efc08e2c84e1d7be11844f4c4863166d6",
+  "local_video_verification": "Full local browser playback passed; 13 timestamped frames visually inspected. Captions only; no narration. Public hosting and signed-out playback remain pending."
 }

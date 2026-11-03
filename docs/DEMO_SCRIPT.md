@@ -1,33 +1,39 @@
 # Three-minute demo script
 
-Target: 180 seconds maximum. Show only the new MarketMind workflow. Record the actual
-Muse-backed product. Keep keys, System Properties and account/billing screens off video.
-A captioned local recording is useful, but a final public video URL must be checked.
+Record the real Muse-backed workflow in at most 180 seconds. The opening shows a
+saved scheduled scan, followed by one explicitly requested live stock investigation.
+Keep keys, System Properties and account/billing screens out of the recording.
 
 | Time | Screen | Narration / caption |
 | --- | --- | --- |
-| 0:00-0:20 | Market radar and industry themes | A scheduled Muse job reviews broad economic/business news and saves 10 sourced research candidates every two hours. Theme: Build for Your World. |
-| 0:20-0:35 | Select a radar stock to fill the form | I adapted an earlier data-fetching foundation. During this event I built the market radar, Muse research integration, structured cited reports, evidence dashboard and validation. The inherited trading code is excluded. |
-| 0:35-1:05 | Click Investigate for the selected stock; show real loading | This request collects completed price history, provider fundamentals and available ticker news, then asks Muse Spark to reason over bounded evidence. There is no other model provider or canned response. |
-| 1:05-1:30 | Brief and a citation | The report separates observations from hypotheses. Clicking M1 shows the exact numeric evidence and timestamps. Citation IDs are checked; that alone does not prove the claim is true. |
-| 1:30-1:50 | Findings and counterpoints | I can inspect what supports the narrative and what challenges it. If news is missing, the report flags that gap rather than inventing a catalyst. |
-| 1:50-2:10 | Risk and unknowns | Volatility and drawdown describe the historical window. They are not price forecasts. These unresolved questions show what needs further investigation. |
-| 2:10-2:30 | Model/method details and JSON export | Here is the actual Muse model and token usage. I can export the evidence and report together for review. Keys never reach the browser. |
-| 2:30-2:50 | Validation/code or tests | The new code rejects malformed JSON, unknown citations and truncated output. Offline tests cover failure paths, fixed Muse routing and numerical behavior. |
-| 2:50-3:00 | Product | MarketMind makes stock research easier to inspect. It is educational research, with explicit uncertainty and no trading instructions. |
+| 0:00-0:09 | Saved radar and last-scan time | Muse scans broad economic and business news every two hours. Opening the page reads the saved top ten and makes no model call. |
+| 0:09-0:18 | Stock cards, reasons, risks and citations | Discovery begins with news across industries, without a fixed stock watchlist. Companies and quotes are verified before final selection. |
+| 0:18-0:26 | Radar coverage and source method | Nine configured feeds provide broad coverage, not every internet story. All collected recent headlines are reviewed in batches. Prices are saved snapshots. |
+| 0:26-0:33 | Select a card; research form | I built scheduled discovery, Muse integration, cited reports and validation on an earlier data-fetching foundation. Selection fills the form; Investigate is a separate action. |
+| 0:33-1:15 | Explicit Investigate request and research brief | One real Muse call reasons over stock-specific evidence and original radar sources. Missing evidence remains visible; no canned report is substituted. |
+| 1:15-1:31 | Follow a claim to evidence | Inspect numeric data and linked sources. R-prefixed IDs carry original radar evidence into research. Checked citation IDs do not establish factual truth. |
+| 1:31-1:48 | Findings and counterpoints | Compare the narrative with opposing evidence. Report ticker-news and radar-headline counts separately, including any missing ticker news. |
+| 1:48-2:05 | Risk and unanswered questions | Historical volatility and drawdown describe the observed window, not a forecast. No trades or promised returns. |
+| 2:05-2:19 | Research method and Muse metadata | Show the actual model ID and token usage. Credentials stay on the server. |
+| 2:19-2:31 | Export JSON | Export the findings, original evidence, risk calculations, gaps and inference metadata together. |
+| 2:31-2:46 | New scheduling code | Explain the two-hour due check, atomic publication and last-good-list retention on failure. Tests cover schedule, persistence and citation failures. |
+| 2:46-2:55 | Return to product | Discover, question, inspect. Build for Your World. Prior work is acknowledged; educational research only. |
 
-## Recording checks
+## Reproduce the recording
 
-- Keep the recording at or under three minutes; confirm duration with a media tool.
-- Use a real Muse response. If a live request fails, retry or record later; do not
-  replace the response with an invented success screen.
-- Do not claim news-based reasoning if the actual run has no news.
-- Use captions or narration to identify new contributions in the recording itself.
-- Upload the final video through a service you authorize. Test its link signed out.
-- Put the public video and repository URLs in the CV submission and list contributors.
+1. Run `python main.py` with `MUSE_API_KEY` configured.
+2. Allow the first scheduled scan to finish. The radar must have a fresh real list
+   before recording; the recorder does not force a scan or invent candidates.
+3. Install optional recording tools if needed: `python -m pip install playwright`
+   and `python -m playwright install chromium`.
+4. Run `python scripts/record_demo.py`. It records the first selected stock and one
+   real Muse investigation, including original-source handoff and a JSON download.
+5. Inspect `artifacts/recording-receipt.json`, measure the video duration and review
+   playback. Upload only through a hosting service authorized by the builder.
 
-A real captioned local recording is available at `artifacts/marketmind-demo.webm` (175.56 seconds). It has no audio narration. Review the entire recording before hosting it. To rerun the recorder on another machine, optionally install Playwright and Chromium (`python -m pip install playwright`, then `python -m playwright install chromium`).
-
-The current local recording predates the market radar and needs re-recording to show the new feature. Do not imply the radar appears in that older footage.
-
-Start the server and allow the first scheduled radar scan to finish before recording. The recorder waits for the saved real radar result and selects its first candidate before explicitly starting full research. It stops if the live calls exceed the allotted recording segments instead of substituting fake results.
+The recorder preserves the previous video/report/receipt in ignored
+`artifacts/previous-demo/`. The current draft is `artifacts/marketmind-demo.webm`,
+with captions and no audio narration. The current version is 175.60 seconds; full
+local playback and 13 sampled-frame checks passed. See `submission/VERIFICATION.md`
+for evidence and tested feature coverage. Public hosting and signed-out playback checks
+remain pending. Do not describe a local video as a submitted or publicly accessible demo.

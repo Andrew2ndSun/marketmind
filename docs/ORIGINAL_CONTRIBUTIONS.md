@@ -16,7 +16,7 @@ pre-event commit history, and deleting old files does not make inherited work ne
 | marketmind/app.py | Event-focused API built on prior FastAPI experience | New research-only routes, not the inherited trading platform. |
 | marketmind/web/ | Event dashboard | Question form, linked findings, counterpoints, chart, unknowns, export. |
 | tests/ | Event-focused regression suite | Offline invented fixtures only; no fixed product report masquerading as Muse. |
-| docs/, submission/, CI and preflight | Submission preparation | Audit trail, reproducibility, demo plan and explicit pending gates. |
+| docs/, submission/, scripts/record_demo.py, CI and preflight | Submission preparation | Current workflow disclosures, real captioned recording with source-handoff checks, reproducibility and explicit pending gates. |
 
 The earlier platform contained trading/allocations, strategy validation, paper snapshots,
 other provider clients and old reports. Those were removed and must not appear in the
@@ -42,3 +42,13 @@ history if it is available; do not backdate commits or invent authorship.
 The builder says the initial stock-analysis idea was suggested by a classmate. This
 acknowledges the idea suggestion without attributing the MarketMind code to that
 classmate or adding a development teammate. The contributor list remains solo.
+
+## Scheduled discovery contribution
+
+The event workflow now begins with broad news collection rather than a preset stock
+pool. Muse discovers companies from all collected headlines, company/quote checks
+reject unsupported symbols, and Muse selects ten cited research candidates. A new
+server scheduler persists results and refreshes them every two hours. Page views read
+the saved list; failures retain the previous successful scan. Original sources carry
+into an explicitly requested investigation. These changes, their failure-path tests
+and the updated demonstration belong to the event work described above.
